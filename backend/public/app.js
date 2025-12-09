@@ -1,4 +1,4 @@
-// Enhanced frontend: dynamic entries, photo preview, live CV preview, and form submission
+// Enhanced frontend: dynamic entries, photo preview, live CV preview, and form submission with auth
 (function(){
   const form = document.getElementById('cv-form');
   const expList = document.getElementById('experience-list');
@@ -10,6 +10,10 @@
   const status = document.getElementById('status');
   const photoInput = document.getElementById('photo-input');
   let photoDataUrl = null;
+
+  function getToken() {
+    return localStorage.getItem('cv_token') || localStorage.getItem('cvbuilder_token') || sessionStorage.getItem('cv_token') || sessionStorage.getItem('cvbuilder_token');
+  }
 
   function createExperienceEntry(data = {}){
     const wrapper = document.createElement('div');
@@ -131,7 +135,7 @@
   // Initial preview
   updatePreview();
 
-  // Form submission - send structured JSON (unless prompt is provided, in which case server may use AI)
+  // Form submission - send structured JSON and include Authorization header if token present
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     status.textContent = 'Generating PDF...';
@@ -150,10 +154,12 @@
     if (file) formData.append('photo', file);
 
     try {
-      const res = await fetch('/api/generate-cv', { method: 'POST', body: formData });
+      const token = getToken();
+      const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+      const res = await fetch('/api/generate-cv', { method: 'POST', headers, body: formData });
       if (!res.ok) {
-        const err = await res.json();
-        status.textContent = 'Error: ' + (err.error || res.statusText);
+        const err = await res.json().catch(()=>({}));
+        status.textContent = 'Error: ' + (err.error || res.statusText || 'Failed');
         return;
       }
       const blob = await res.blob();
@@ -165,9 +171,43 @@
       document.body.appendChild(a);
       a.click(); a.remove(); window.URL.revokeObjectURL(url);
       status.textContent = 'Done — PDF downloaded';
+      // refresh My CVs list if logged in
+      if (token) { setTimeout(()=>{ fetchMyCvs(); }, 800); }
     } catch (err) {
       console.error(err);
       status.textContent = 'Failed to generate PDF: ' + err.message;
     }
   });
+
+  // fetchMyCvs used by index.html script; expose as global function for simplicity
+  window.fetchMyCvs = async function(){
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch('/api/my-cvs', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const list = document.getElementById('my-cvs-list');
+      if (!data.files || !data.files.length) { list.innerText = 'No saved CVs yet'; return; }
+      list.innerHTML = '';
+      data.files.forEach(f => {
+        const div = document.createElement('div');
+        const dl = document.createElement('button');
+        dl.textContent = 'Download';
+        dl.addEventListener('click', async ()=>{
+          try {
+            const r = await fetch('/api/my-cvs/download/' + encodeURIComponent(f.name), { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!r.ok) { alert('Failed to download'); return; }
+            const blob = await r.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
+          } catch (e) { console.error(e); alert('Download error'); }
+        });
+        div.textContent = f.name + ' ';
+        div.appendChild(dl);
+        list.appendChild(div);
+      });
+    } catch (e) { console.error('Fetch my cvs', e); }
+  };
+
 })();
