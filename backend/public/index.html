@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>CV Builder - AI helper</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>CV Builder (AI helper)</h1>
+    <form id="cv-form">
+      <label>
+        Full name
+        <input name="name" required />
+      </label>
+
+      <label>
+        Email
+        <input name="email" type="email" />
+      </label>
+
+      <label>
+        Phone
+        <input name="phone" />
+      </label>
+
+      <label>
+        Location
+        <input name="location" />
+      </label>
+
+      <label>
+        Photo (optional)
+        <input name="photo" type="file" accept="image/*" />
+      </label>
+
+      <label>
+        AI prompt or bullet points (type a short description / bullets and the AI will expand into CV sections)
+        <textarea name="prompt" placeholder="e.g. Senior frontend dev, React, 6 years, led a team of 3; Built SAAS apps; MSc CS"></textarea>
+      </label>
+
+      <div style="margin-top:10px;">
+        <button type="submit">Generate CV (PDF)</button>
+      </div>
+    </form>
+
+    <div id="status"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
