@@ -9,43 +9,44 @@
 <body>
   <main class="container">
     <h1>CV Builder (AI helper)</h1>
-    <form id="cv-form">
-      <label>
-        Full name
-        <input name="name" required />
-      </label>
+    <div class="layout">
+      <form id="cv-form" class="form">
+        <div class="form-section">
+          <label>Full name<input name="name" required /></label>
+          <label>Email<input name="email" type="email" /></label>
+          <label>Phone<input name="phone" /></label>
+          <label>Location<input name="location" /></label>
+          <label>Photo (optional)<input id="photo-input" name="photo" type="file" accept="image/*" /></label>
+        </div>
 
-      <label>
-        Email
-        <input name="email" type="email" />
-      </label>
+        <div class="form-section entries">
+          <h3>Experience <button id="add-exp" type="button" class="small">+ add</button></h3>
+          <div id="experience-list"></div>
+        </div>
 
-      <label>
-        Phone
-        <input name="phone" />
-      </label>
+        <div class="form-section entries">
+          <h3>Education <button id="add-edu" type="button" class="small">+ add</button></h3>
+          <div id="education-list"></div>
+        </div>
 
-      <label>
-        Location
-        <input name="location" />
-      </label>
+        <div class="form-section">
+          <label>Skills (comma separated)<input name="skills" placeholder="JavaScript, React, Node.js" /></label>
+          <label>AI prompt or bullet points (optional)<textarea name="prompt" placeholder="Short summary or bullets to ask AI to expand"></textarea></label>
+        </div>
 
-      <label>
-        Photo (optional)
-        <input name="photo" type="file" accept="image/*" />
-      </label>
+        <div class="form-actions">
+          <button id="preview-btn" type="button">Update Preview</button>
+          <button id="generate-btn" type="submit">Generate CV (PDF)</button>
+        </div>
 
-      <label>
-        AI prompt or bullet points (type a short description / bullets and the AI will expand into CV sections)
-        <textarea name="prompt" placeholder="e.g. Senior frontend dev, React, 6 years, led a team of 3; Built SAAS apps; MSc CS"></textarea>
-      </label>
+        <div id="status" class="status"></div>
+      </form>
 
-      <div style="margin-top:10px;">
-        <button type="submit">Generate CV (PDF)</button>
-      </div>
-    </form>
-
-    <div id="status"></div>
+      <aside class="preview">
+        <h2>Live Preview</h2>
+        <div id="cv-preview" class="cv-frame"></div>
+      </aside>
+    </div>
   </main>
 
   <script src="app.js"></script>

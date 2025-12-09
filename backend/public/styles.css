@@ -1,7 +1,34 @@
-body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f7f9fb; color:#101010; padding:24px; }
-.container { max-width:720px; margin:0 auto; background:white; padding:18px 22px; border-radius:10px; box-shadow: 0 6px 20px rgba(12,18,30,0.06);} 
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#f3f6fb; color:#0b1220; padding:20px; }
+.container { max-width:1100px; margin:0 auto; background:white; padding:18px 22px; border-radius:10px; box-shadow: 0 8px 30px rgba(12,18,30,0.06);} 
 h1 { margin-top:0; }
-label { display:block; margin-bottom:10px; }
-input, textarea { width:100%; padding:8px 10px; margin-top:6px; border-radius:6px; border:1px solid #ddd; box-sizing:border-box; }
+.layout { display:flex; gap:20px; }
+.form { flex:1; min-width:360px; }
+.preview { width:440px; }
+.form-section { margin-bottom:14px; padding-bottom:8px; border-bottom:1px dashed #e6eef8; }
+label { display:block; margin-bottom:8px; font-size:14px; }
+input, textarea, select { width:100%; padding:8px 10px; margin-top:6px; border-radius:6px; border:1px solid #dfe9f6; box-sizing:border-box; background:#fbfdff; }
+textarea { min-height:72px; }
+.small { font-size:12px; padding:6px 8px; margin-left:8px; }
+.entries .entry { border:1px solid #eef6ff; padding:10px; border-radius:8px; margin-bottom:8px; background:#fcfeff; }
+.entry .row { display:flex; gap:8px; }
+.entry input { flex:1; }
+.entry textarea { width:100%; }
+.form-actions { display:flex; gap:8px; margin-top:10px; }
 button { padding:10px 14px; background:#2563eb; color:white; border:0; border-radius:8px; cursor:pointer; }
-#status { margin-top:10px; color:#333; font-size:14px; }
+button[disabled] { opacity:0.6; cursor:not-allowed; }
+.status { margin-top:10px; color:#333; font-size:14px; }
+.cv-frame { border:1px solid #e6eef8; padding:12px; border-radius:8px; height:720px; overflow:auto; background:white; }
+
+/* Basic CV preview styles (match server PDF layout) */
+.cv { font-family: Arial, Helvetica, sans-serif; color:#222; padding:18px; }
+.cv .header { display:flex; align-items:center; gap:16px; margin-bottom:12px; }
+.cv .photo { width:96px; height:96px; border-radius:8px; overflow:hidden; background:#eee; flex-shrink:0; }
+.cv .photo img { width:100%; height:100%; object-fit:cover; }
+.cv .name { font-size:22px; font-weight:700; }
+.cv .meta { color:#555; font-size:13px; margin-top:6px; }
+.cv h3 { border-bottom:2px solid #f1f5f9; padding-bottom:6px; margin-top:12px; margin-bottom:8px; }
+.cv .exp-item { margin-bottom:8px; }
+.cv .exp-header { display:flex; justify-content:space-between; }
+.cv .dates { color:#666; font-size:12px; }
+.cv ul { margin:6px 0 0 18px; }
+.cv .skill { display:inline-block; background:#f1f3f5; padding:5px 8px; margin:4px; border-radius:6px; font-size:13px; }
