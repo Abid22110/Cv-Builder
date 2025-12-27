@@ -3,7 +3,7 @@ const fs = require('fs');
 const express = require('express');
 const multer = require('multer');
 const { Configuration, OpenAIApi } = require('openai');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -97,28 +97,29 @@ function buildHtml(cvData, photoDataUrl) {
     <meta charset="utf-8" />
     <title>CV - ${escapeHtml(name || '')}</title>
     <style>
-      body { font-family: Arial, sans-serif; color: #222; padding: 28px; }
-      .header { display:flex; align-items:center; gap:20px; margin-bottom:18px; }
-      .photo { width:120px; height:120px; border-radius:8px; overflow:hidden; background:#eee; }
+      body { font-family: 'Times New Roman', serif; color: #2c3e50; padding: 25px; background: white; line-height: 1.6; }
+      .header { display:flex; align-items:center; gap:20px; margin-bottom:20px; }
+      .photo { width:120px; height:120px; border-radius:50%; overflow:hidden; background:#ecf0f1; flex-shrink:0; border:3px solid #3498db; box-shadow:0 4px 8px rgba(0,0,0,0.2); }
       .photo img { width:100%; height:100%; object-fit:cover; }
       .heading { flex:1; }
-      .name { font-size:28px; font-weight:700; margin-bottom:6px; }
-      .meta { color:#555; font-size:14px; }
-      .section { margin-top:18px; }
-      .section h3 { border-bottom:2px solid #eee; padding-bottom:6px; margin-bottom:10px; color:#111; }
-      .exp-header { display:flex; justify-content:space-between; }
-      .dates { color:#666; font-size:12px; }
-      ul { margin:6px 0 0 18px; }
-      .skill { display:inline-block; background:#f1f3f5; padding:6px 8px; margin:4px; border-radius:6px; font-size:13px; }
+      .name { font-size:28px; font-weight:700; margin-bottom:8px; }
+      .meta { color:#7f8c8d; font-size:16px; margin-bottom:10px; }
+      .summary { color:#34495e; font-style:italic; }
+      .section { margin-top:20px; }
+      .section h3 { border-bottom:4px solid #3498db; padding-bottom:8px; margin-bottom:15px; font-weight:600; color:#2c3e50; }
+      .exp-header { display:flex; justify-content:space-between; align-items:center; }
+      .dates { color:#95a5a6; font-size:14px; font-style:italic; }
+      ul { margin:10px 0 0 25px; }
+      .skill { display:inline-block; background:#ecf0f1; color:#34495e; padding:8px 12px; margin:5px; border-radius:25px; font-size:14px; font-weight:500; border:1px solid #bdc3c7; }
     </style>
   </head>
   <body>
     <div class="header">
-      <div class="photo">${photoDataUrl ? `<img src="${photoDataUrl}" alt="photo"/>` : ''}</div>
+      <div class="photo">${photoDataUrl ? `<img src="${photoDataUrl}" alt="Profile Photo"/>` : ''}</div>
       <div class="heading">
         <div class="name">${escapeHtml(name || '')}</div>
-        <div class="meta">${escapeHtml(email || '')} ${phone ? ' | ' + escapeHtml(phone) : ''} ${location ? ' | ' + escapeHtml(location) : ''}</div>
-        <div style="margin-top:8px; color:#444;">${escapeHtml(summary || '')}</div>
+        <div class="meta">${escapeHtml(email || '')}${phone ? ' | ' + escapeHtml(phone) : ''}${location ? ' | ' + escapeHtml(location) : ''}</div>
+        ${summary ? `<div class="summary">${escapeHtml(summary)}</div>` : ''}
       </div>
     </div>
 
@@ -213,8 +214,11 @@ app.post('/api/generate-cv', authenticate, upload.single('photo'), async (req, r
       skills: cvStructured.skills
     }, photoDataUrl);
 
-    // Render to PDF using puppeteer
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    // Render to PDF using puppeteer-core for Vercel compatibility
+    const browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' } });
@@ -248,7 +252,7 @@ app.get('/api/my-cvs', authenticate, (req, res) => {
     const userId = String(req.user.id || req.user.sub || req.user.email || 'anonymous');
     const userDir = path.join(GENERATED_DIR, sanitizeFilename(userId));
     if (!fs.existsSync(userDir)) return res.json({ files: [] });
-    const files = fs.readdirSync(userDir).filter(f => f.endsWith('.pdf')).map(f => ({ name: f, url: `/api/my-cvs/download/${encodeURIComponent(f)}`, created_at: fs.statSync(path.join(userDir, f)).ctime }));
+    const files = fs.readdirSync(userDir).filter(f => f.endsWith('.pdf')).map(f => ({ name: f, url: `/api/my-cvs/download/${encodeURIComponent(f)}`, created_at: fs.statSync(path.join(userDir, f)).mtime }));
     res.json({ files });
   } catch (err) {
     console.error('List CVs error', err);
@@ -272,8 +276,6 @@ app.get('/api/my-cvs/download/:file', authenticate, (req, res) => {
     res.status(500).json({ error: 'Failed to download file' });
   }
 });
-
-// Simple auth endpoints (signup/login) kept as before
 
 // Signup - create a new user
 app.post('/api/signup', async (req, res) => {
