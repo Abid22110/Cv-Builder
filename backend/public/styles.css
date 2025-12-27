@@ -285,3 +285,21 @@ button[disabled] {
   font-weight: 500;
   border: 1px solid var(--border-color);
 }
+
+/* Additional styles for new elements */
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-top: 40px;
+}
+.subtitle {
+  font-size: 18px;
+  color: var(--secondary-color);
+  margin-top: 10px;
+  font-weight: 400;
+}
+.required {
+  color: #e74c3c;
+}
