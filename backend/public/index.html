@@ -1,41 +1,48 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>CV Builder - AI helper</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create professional CVs with AI assistance. Easy-to-use CV builder with live preview and PDF export.">
+  <meta name="keywords" content="CV builder, resume maker, AI assistant, PDF generator, job application">
+  <meta name="author" content="Abid Hussain">
+  <title>CV Builder - AI-Powered Resume Creator</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
 </head>
 <body>
   <main class="container">
-    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <h1>CV Builder (AI helper)</h1>
+    <header>
+      <h1>CV Builder with AI Assistant</h1>
+      <p class="subtitle">Create professional resumes effortlessly with AI-powered content generation</p>
       <div id="user-area"></div>
     </header>
 
     <div class="layout">
       <form id="cv-form" class="form">
         <div class="form-section">
-          <label>Full name<input name="name" required /></label>
-          <label>Email<input name="email" type="email" /></label>
-          <label>Phone<input name="phone" /></label>
-          <label>Location<input name="location" /></label>
-          <label>Photo (optional)<input id="photo-input" name="photo" type="file" accept="image/*" /></label>
+          <h3>Personal Information</h3>
+          <label for="name">Full Name <span class="required">*</span><input id="name" name="name" required placeholder="e.g., John Doe" /></label>
+          <label for="email">Email <span class="required">*</span><input id="email" name="email" type="email" placeholder="john@example.com" /></label>
+          <label for="phone">Phone<input id="phone" name="phone" placeholder="+1 (555) 123-4567" /></label>
+          <label for="location">Location<input id="location" name="location" placeholder="City, State/Country" /></label>
+          <label for="photo-input">Profile Photo (optional)<input id="photo-input" name="photo" type="file" accept="image/*" /></label>
         </div>
 
         <div class="form-section entries">
-          <h3>Experience <button id="add-exp" type="button" class="small">+ add</button></h3>
+          <h3>Work Experience <button id="add-exp" type="button" class="small">+ Add Experience</button></h3>
           <div id="experience-list"></div>
         </div>
 
         <div class="form-section entries">
-          <h3>Education <button id="add-edu" type="button" class="small">+ add</button></h3>
+          <h3>Education <button id="add-edu" type="button" class="small">+ Add Education</button></h3>
           <div id="education-list"></div>
         </div>
 
         <div class="form-section">
-          <label>Skills (comma separated)<input name="skills" placeholder="JavaScript, React, Node.js" /></label>
-          <label>AI prompt or bullet points (optional)<textarea name="prompt" placeholder="Short summary or bullets to ask AI to expand"></textarea></label>
+          <h3>Skills & Summary</h3>
+          <label for="skills">Skills (comma separated)<input id="skills" name="skills" placeholder="JavaScript, React, Node.js, Python" /></label>
+          <label for="prompt">AI Prompt or Bullet Points (optional)<textarea id="prompt" name="prompt" placeholder="Describe your experience briefly, or provide bullet points for AI to expand into professional content. For example: '5+ years in software development, led team of 10 developers, built scalable web apps'"></textarea></label>
         </div>
 
         <div class="form-actions">
@@ -50,18 +57,22 @@
         <h2>Live Preview</h2>
         <div id="cv-preview" class="cv-frame"></div>
 
-        <div style="margin-top:12px;">
-          <h3>My CVs</h3>
-          <div id="my-cvs-list">(login to see your saved CVs)</div>
+        <div style="margin-top:20px;">
+          <h3>My Saved CVs</h3>
+          <div id="my-cvs-list">(Sign in to save and view your CVs)</div>
         </div>
       </aside>
     </div>
   </main>
 
+  <footer>
+    <p>&copy; 2025 CV Builder by Abid Hussain. Built with ❤️ using AI technology.</p>
+  </footer>
+
   <script src="auth.js"></script>
   <script src="app.js"></script>
   <script>
-    // show user info and login/logout links
+    // Enhanced user area and CV management
     (function(){
       const userArea = document.getElementById('user-area');
       function getToken() {
@@ -73,15 +84,17 @@
       const user = getUser();
       const token = getToken();
       if (user && token) {
-        userArea.innerHTML = `<div style="display:flex;gap:10px;align-items:center"> <div>${user.name||user.email}</div> <button id="logout-btn">Logout</button></div>`;
+        userArea.innerHTML = `<div style="display:flex;gap:10px;align-items:center;"> <div>Welcome, ${user.name || user.email}!</div> <button id="logout-btn">Logout</button></div>`;
         document.getElementById('logout-btn').addEventListener('click', ()=>{
-          localStorage.removeItem('cv_token'); localStorage.removeItem('cv_user'); localStorage.removeItem('cvbuilder_token'); localStorage.removeItem('cvbuilder_user'); sessionStorage.removeItem('cv_token'); sessionStorage.removeItem('cv_user'); sessionStorage.removeItem('cvbuilder_token'); sessionStorage.removeItem('cvbuilder_user');
+          ['cv_token', 'cv_user', 'cvbuilder_token', 'cvbuilder_user'].forEach(key => {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+          });
           window.location.reload();
         });
-        // fetch my CVs
         fetchMyCvs();
       } else {
-        userArea.innerHTML = `<a href="login.html" style="color:#2563eb">Sign in</a> <a href="signup.html" style="margin-left:8px;color:#2563eb">Sign up</a>`;
+        userArea.innerHTML = `<a href="login.html" style="color:#2563eb;text-decoration:none;">Sign In</a> | <a href="signup.html" style="margin-left:8px;color:#2563eb;text-decoration:none;">Sign Up</a>`;
       }
 
       async function fetchMyCvs(){
@@ -92,26 +105,28 @@
           if (!res.ok) return;
           const data = await res.json();
           const list = document.getElementById('my-cvs-list');
-          if (!data.files || !data.files.length) { list.innerText = 'No saved CVs yet'; return; }
+          if (!data.files || !data.files.length) { list.innerText = 'No saved CVs yet. Generate one to get started!'; return; }
           list.innerHTML = '';
           data.files.forEach(f => {
             const div = document.createElement('div');
+            div.style.marginBottom = '8px';
             const dl = document.createElement('button');
             dl.textContent = 'Download';
+            dl.className = 'small';
             dl.addEventListener('click', async () =>{
               try {
                 const r = await fetch('/api/my-cvs/download/' + encodeURIComponent(f.name), { headers: { 'Authorization': 'Bearer ' + token } });
-                if (!r.ok) { alert('Failed to download'); return; }
+                if (!r.ok) { alert('Failed to download CV. Please try again.'); return; }
                 const blob = await r.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
-              } catch (e) { console.error(e); alert('Download error'); }
+              } catch (e) { console.error(e); alert('Download error. Check your connection.'); }
             });
             div.textContent = f.name + ' ';
             div.appendChild(dl);
             list.appendChild(div);
           });
-        } catch (e) { console.error('Fetch my cvs', e); }
+        } catch (e) { console.error('Error fetching CVs', e); }
       }
     })();
   </script>
